@@ -70,6 +70,7 @@ class VectorLayer(Layer):
             self.style.init_statistics()
             for feat in self.features:
                 self.style.update_statistics(feat)
+            self.style.finalize_statistics()
         # Read all features
         for feat in self.features:
             geom_elem = self.geometry_for_feature(feat, map_container)

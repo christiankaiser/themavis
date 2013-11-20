@@ -41,12 +41,12 @@ class ColorMap(object):
         self.set_rgb(colors)
         self.cmap_id = cmap_id
     
-    def set_rgb(colors):
+    def set_rgb(self, colors):
         self.colors = []
         for c in colors: 
             self.colors.append(Color(c))
     
-    def load(cmap_id):
+    def load(self, cmap_id):
         cm_dir = dirname(abspath(__file__)) + sep + 'colormaps'
         cm_path = cm_dir + sep + cmap_id
         if not exists(cm_path):

@@ -35,7 +35,7 @@ class Container(object):
         })
         # Create a default contour style
         self.contour_style = StyleBuilder({
-            'fill': 'none', 'stroke-width': 0.3, 'stroke': 'black'
+            'fill': 'none', 'stroke-width': 0, 'stroke': 'none'
         })
     
     def draw_background(self, elem):
@@ -161,34 +161,40 @@ class Map(Container):
 
 
 class Text(Container):
-    def __init__(self, x, y, width, height, text, style={}):
+    def __init__(self, x, y, width, height, text, style=None):
         Container.__init__(self, x, y, width, height)
         self.has_content = True
         self.text = text
-        self.style = StyleBuilder(style)
+        if style != None:
+            self.style = StyleBuilder(style)
     
     def draw_content(self, elem):
         textsize = int(re.findall('([0-9]+)',
             self.style.style_dict.get('font-size', "12")
         )[0])
-        t = text(
-            content=self.text, 
-            x=mm_to_px(self.x), y=mm_to_px(self.y)+textsize
-        )
-        t.set_style(self.style.getStyle())
-        elem.addElement(t)
+        txt = self.text.split('\n')
+        for i in range(len(txt)):
+            y = mm_to_px(self.y) + textsize + i*1.8*textsize
+            t = text(
+                content=txt[i], 
+                x=mm_to_px(self.x), y=y
+            )
+            t.set_style(self.style.getStyle())
+            elem.addElement(t)
 
 
 
 class ScaleBar(Container):
-    def __init__(self, x, y, width, height, map_container, unit, step=1, factor=1, style={}):
+    def __init__(self, x, y, width, height, map_container, unit, step=1, factor=1, style=None):
         Container.__init__(self, x, y, width, height)
         self.has_content = True
         self.map_container = map_container
         self.unit = unit
         self.step = step
         self.factor = factor
-        self.style = StyleBuilder(style)
+        self.style = StyleBuilder({'font-family': 'Helvetica', 'font-size': '8pt', 'font-weight': 'normal'})
+        if style != None:
+            self.style = StyleBuilder(style)
         self.style.style_dict['text-anchor'] = 'middle'
         self.style.style_dict['text-align'] = 'center'
     
@@ -229,5 +235,66 @@ class ScaleBar(Container):
             grp.addElement(t)
         elem.addElement(grp)
 
+
+
+class Legend(Container):
+    
+    def __init__(self, x, y, width, height, style, title=None, name=None, units=None):
+        Container.__init__(self, x, y, width, height)
+        self.has_content = True
+        self.style = style
+        self.container_style = {'fill': 'none', 'stroke-width': 0, 'stroke': 'none'}
+        self.title = title
+        self.name = name
+        self.units = units
+        self.border = 3
+        self.title_style = {'font-family': 'Helvetica', 'font-size': '11pt', 'font-weight': 'bold'}
+        self.name_style = {
+            'font-family': 'Helvetica',
+            'font-size': '8pt',
+            'font-weight': 'bold'
+        }
+        self.label_style = {
+            'font-family': 'Helvetica',
+            'font-size': '8pt',
+            'font-weight': 'normal'
+        }
+    
+    def draw_content(self, elem):
+        contour = rect(
+            x = mm_to_px(self.x), 
+            y = mm_to_px(self.y),
+            width = mm_to_px(self.width),
+            height = mm_to_px(self.height)
+        )
+        contour.set_style(StyleBuilder(self.container_style).getStyle())
+        elem.addElement(contour)
+        x = self.x + self.border
+        y = self.y + self.border
+        width = self.width - (2*self.border)
+        height = self.height - (2*self.border)
+        if self.title is not None:
+            textsize = int(re.findall('([0-9]+)',
+                self.title_style.get('font-size', "11")
+            )[0])
+            t = text(
+                content=self.title, 
+                x=mm_to_px(x), y=mm_to_px(y) + textsize
+            )
+            t.set_style(StyleBuilder(self.title_style).getStyle())
+            elem.addElement(t)
+            y += int(round(textsize))
+        if self.name is not None:
+            textsize = int(re.findall('([0-9]+)',
+                self.name_style.get('font-size', "11")
+            )[0])
+            t = text(
+                content=self.name, 
+                x=mm_to_px(x), y=mm_to_px(y) + textsize
+            )
+            t.set_style(StyleBuilder(self.name_style).getStyle())
+            elem.addElement(t)
+            y += int(round(textsize))
+        self.style.legend(elem, x, y, width, height, self.label_style)
 
 
