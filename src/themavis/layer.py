@@ -2,7 +2,6 @@
 
 
 import json
-import shapely
 
 from style import SimpleSurfaceStyle
 from utils import mm_to_px, parse
